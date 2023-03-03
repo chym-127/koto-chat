@@ -55,6 +55,8 @@ function handleLogin() {
   login(user).then((resp: Res) => {
     if (resp.code === 0 && resp.data.token) {
       localStorage.setItem('TOKEN', resp.data.token);
+      localStorage.setItem('USER_INFO', JSON.stringify(resp.data.userInfo));
+
       emit('success');
     }
   });

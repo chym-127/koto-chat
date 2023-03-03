@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
+import VoiceChat from '../voice-chat/index.vue';
 import { listUser } from '../../request/api';
 import { User, UserState } from './types';
 import phoneCall from '../../assets/phone-call.png';
@@ -77,6 +78,7 @@ socket.on('res_call', (msg) => {
   switch (msg.ack) {
     case CallAck.STARTCONN:
       console.log('start connect');
+      chatRef.value!.startChat()
       break;
 
     default:
@@ -84,11 +86,19 @@ socket.on('res_call', (msg) => {
   }
 });
 
+let user = JSON.parse(localStorage.getItem('USER_INFO')!);
+
+let senderId = ref(user.id);
+console.log(senderId);
+
+const chatRef = ref<InstanceType<typeof VoiceChat> | null>(null);
+
 handleListUser();
 </script>
 
 <template>
   <div class="w-screen h-screen p-4 bg-[#f0f0f0] flex flex-col">
+    <VoiceChat ref="chatRef" class="absolute -z-10" :sender-id="senderId" :receiver-id="activeUser.id"></VoiceChat>
     <!-- <div class="header h-[60px]">
       {{ users }}
     </div> -->

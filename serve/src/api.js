@@ -129,7 +129,13 @@ app.post("/login", (req, res) => {
             const user = findUserByUsernameWithPassword(requestData.username, requestData.password)
             if (user) {
                 let token = generaToken(user)
-                res.json(successRes().data({ token: token }).end())
+                res.json(successRes().data({
+                    token: token, userInfo: {
+                        id: user.id,
+                        username: user.username,
+                        state: user.state
+                    }
+                }).end())
             } else {
                 res.json(errorRes().code(103).details("账户不存在或密码错误").end())
             }

@@ -24,12 +24,12 @@ var remoteAudio = document.querySelector('#remoteAudio');
 let localStream = null
 let remoteStream = null
 
-// 获取音视频流
-// navigator.mediaDevices.getUserMedia(localStreamConstraints)
-//     .then(gotStream)
-//     .catch(function (e) {
-//         alert('getUserMedia() error: ' + e.name);
-//     });
+获取音视频流
+navigator.mediaDevices.getUserMedia(localStreamConstraints)
+    .then(gotStream)
+    .catch(function (e) {
+        alert('getUserMedia() error: ' + e.name);
+    });
 
 socket.on('message', (message) => {
     if (message.type === 'offer') {

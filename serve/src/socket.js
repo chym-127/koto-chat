@@ -13,15 +13,6 @@ function initSocket(io) {
             ...user,
             socketId: socket.id
         }
-        socket.on("login", (room) => {
-            let currentRoomUserCount = io.sockets.adapter.rooms.get(room);
-            if (!currentRoomUserCount) {
-                socket.join(room)
-                io.sockets.in(room).emit("message", { success: true })
-            } else {
-                socket.join(room)
-            }
-        })
         // 发起呼叫请求
         socket.on('req_call', (userId) => {
             const u = userMapper[userId]
@@ -34,12 +25,15 @@ function initSocket(io) {
         })
         // 响应呼叫
         socket.on('res_call', (msg) => {
-            // socket.join(id)
-            console.log(msg);
-            // io.sockets.in(id).emit("create-peer", { success: true })
+            if (msg.ack === 1) {
+                let u1 = userMapper[msg.user.id]
+                const room = `${u1}-${user.id}`
+                io.sockets.to(u1.socketId).emit("res_call", { ack: 3, user: { id: u1.id, username: u1.username }, room: room })
+                socket.emit("res_call", { ack: 3, user: { id: user.id, username: user.username }, room: room })
+            }
         })
-        socket.on('message', (message, room) => {
-            socket.to(room).emit("message", message)
+        socket.on('send_sdp', (message) => {
+            console.log(message);
         })
         socket.on('ipaddr', function () {
             var ifaces = os.networkInterfaces();
