@@ -10,12 +10,15 @@ if (isLogin) {
 }
 
 const loginBoxVisible = ref(true);
+const hideLoginBox = ref(false)
 const chatRef = ref<InstanceType<typeof Home> | null>(null);
 
 function loginSuccess() {
   initSocket();
-  // chatRef.value?.handleListUser();
   loginBoxVisible.value = false;
+  setTimeout(() => {
+    isLogin.value = true
+  }, 1000);
 }
 </script>
 

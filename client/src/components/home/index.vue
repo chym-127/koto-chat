@@ -59,32 +59,31 @@ function sendMessage() {
 
 // 发起呼叫请求
 function handleRequestCall() {
-  console.log(activeUser.id);
-
-  socket.emit('req_call', activeUser.id);
+  chatRef.value!.call(activeUser.id)
+  // socket.emit('req_call', activeUser.id);
 }
 
 // 监听呼叫请求
-socket.on('req_call', (u) => {
-  // 响应呼叫请求
-  socket.emit('res_call', {
-    ack: CallAck.AGREE,
-    user: u,
-  });
-});
+// socket.on('req_call', (u) => {
+//   // 响应呼叫请求
+//   socket.emit('res_call', {
+//     ack: CallAck.AGREE,
+//     user: u,
+//   });
+// });
 
-// 监听呼叫响应
-socket.on('res_call', (msg) => {
-  switch (msg.ack) {
-    case CallAck.STARTCONN:
-      console.log('start connect');
-      chatRef.value!.startChat()
-      break;
+// // 监听呼叫响应
+// socket.on('res_call', (msg) => {
+//   switch (msg.ack) {
+//     case CallAck.STARTCONN:
+//       console.log('start connect');
+//       chatRef.value!.startChat()
+//       break;
 
-    default:
-      break;
-  }
-});
+//     default:
+//       break;
+//   }
+// });
 
 let user = JSON.parse(localStorage.getItem('USER_INFO')!);
 
@@ -98,31 +97,23 @@ handleListUser();
 
 <template>
   <div class="w-screen h-screen p-4 bg-[#f0f0f0] flex flex-col">
-    <VoiceChat ref="chatRef" class="absolute -z-10" :sender-id="senderId" :receiver-id="activeUser.id"></VoiceChat>
+    <VoiceChat ref="chatRef" :sender-id="senderId" :receiver-id="activeUser.id"></VoiceChat>
     <!-- <div class="header h-[60px]">
-      {{ users }}
-    </div> -->
+        {{ users }}
+      </div> -->
     <div class="body flex flex-1">
       <div class="user-list w-[300px] flex flex-col">
         <!-- <div class="search-bar h-[55px] bg-[#fff] mb-4 rounded-xl"></div> -->
         <div class="users-box cursor-pointer flex-1 bg-[#fff] p-2 rounded-xl">
-          <div
-            class="user border relative border-black-600 h-[40px] mb-2 flex items-center rounded"
-            v-for="(user, index) in users"
-            @click="setActiveUser(user, index)"
-            :key="index"
-            :class="activeUserIndex === index ? 'bg-blue-500' : ''"
-          >
+          <div class="user border relative border-black-600 h-[40px] mb-2 flex items-center rounded"
+            v-for="(user, index) in users" @click="setActiveUser(user, index)" :key="index"
+            :class="activeUserIndex === index ? 'bg-blue-500' : ''">
             <div class="pic w-[30px] relative h-[30px] rounded-full bg-slate-300 m-2">
-              <div
-                class="state absolute w-2 h-2 bottom-[1px] right-[4px] rounded-full"
-                :class="user.state === UserState.OFFLINE ? 'bg-red-500' : 'bg-green-500'"
-              ></div>
+              <div class="state absolute w-2 h-2 bottom-[1px] right-[4px] rounded-full"
+                :class="user.state === UserState.OFFLINE ? 'bg-red-500' : 'bg-green-500'"></div>
             </div>
-            <div
-              class="info flex h-full flex-1 flex items-center"
-              :class="activeUserIndex === index ? 'text-white' : 'text-black'"
-            >
+            <div class="info flex h-full flex-1 flex items-center"
+              :class="activeUserIndex === index ? 'text-white' : 'text-black'">
               <p class="text-lg font-semibold">{{ user.username }}</p>
             </div>
           </div>
@@ -142,13 +133,8 @@ handleListUser();
         </div>
         <div class="footer h-[60px] px-4 pb-4">
           <div class="send-box border h-full relative p-2 flex items-center">
-            <input
-              v-model="message"
-              type="text"
-              class="w-full h-full p-1 flex-1"
-              @keyup.enter="sendMessage"
-              placeholder="输入消息按Enter发送"
-            />
+            <input v-model="message" type="text" class="w-full h-full p-1 flex-1" @keyup.enter="sendMessage"
+              placeholder="输入消息按Enter发送" />
             <img class="w-6 h-6 cursor-pointer" :src="sendPic" alt="" srcset="" />
           </div>
         </div>

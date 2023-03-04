@@ -22,7 +22,8 @@ interface ResCallMessage {
 interface SDPMessage {
   data: any;
   type: string;
-  userId: number;
+  senderId: number;
+  receiverId: number;
 }
 
 interface ServerToClientEvents {

@@ -16,6 +16,7 @@ function initSocket(io) {
         // 发起呼叫请求
         socket.on('req_call', (userId) => {
             const u = userMapper[userId]
+            console.log(u);
             if (u) {
                 io.sockets.to(u.socketId).emit('req_call', {
                     id: user.id,
@@ -28,12 +29,13 @@ function initSocket(io) {
             if (msg.ack === 1) {
                 let u1 = userMapper[msg.user.id]
                 const room = `${u1}-${user.id}`
-                io.sockets.to(u1.socketId).emit("res_call", { ack: 3, user: { id: u1.id, username: u1.username }, room: room })
-                socket.emit("res_call", { ack: 3, user: { id: user.id, username: user.username }, room: room })
+                io.sockets.to(u1.socketId).emit("res_call", { ack: 1, user: { id: user.id, username: user.username } })
+                // socket.emit("res_call", { ack: 3, user: { id: user.id, username: user.username }, room: room })
             }
         })
         socket.on('send_sdp', (message) => {
-            console.log(message);
+            let rUser = userMapper[message.receiverId]
+            io.sockets.to(rUser.socketId).emit("receive_sdp", message)
         })
         socket.on('ipaddr', function () {
             var ifaces = os.networkInterfaces();
