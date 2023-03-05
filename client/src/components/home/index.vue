@@ -5,7 +5,7 @@ import { listUser } from '../../request/api';
 import { User, UserState } from './types';
 import phoneCall from '../../assets/phone-call.png';
 import sendPic from '../../assets/send.png';
-import { CallAck, socket, UserMessage } from '../../libs/socketHelper';
+import { socket, UserMessage } from '../../libs/socketHelper';
 let users = reactive<User[]>([]);
 let activeUser = reactive<User>({
   id: 0,
@@ -13,11 +13,17 @@ let activeUser = reactive<User>({
   state: UserState.OFFLINE,
 });
 const activeUserIndex = ref(0);
+let user = JSON.parse(localStorage.getItem('USER_INFO')!);
 
 function handleListUser() {
   listUser().then((resp) => {
     if (resp.code === 0 && resp.data.items) {
-      users.push(...resp.data.items);
+      resp.data.items.forEach((u: any) => {
+        if (user.id !== u.id) {
+          users.push(u);
+        }
+      });
+
     }
   });
 }
@@ -60,36 +66,10 @@ function sendMessage() {
 // 发起呼叫请求
 function handleRequestCall() {
   chatRef.value!.call(activeUser.id)
-  // socket.emit('req_call', activeUser.id);
 }
 
-// 监听呼叫请求
-// socket.on('req_call', (u) => {
-//   // 响应呼叫请求
-//   socket.emit('res_call', {
-//     ack: CallAck.AGREE,
-//     user: u,
-//   });
-// });
-
-// // 监听呼叫响应
-// socket.on('res_call', (msg) => {
-//   switch (msg.ack) {
-//     case CallAck.STARTCONN:
-//       console.log('start connect');
-//       chatRef.value!.startChat()
-//       break;
-
-//     default:
-//       break;
-//   }
-// });
-
-let user = JSON.parse(localStorage.getItem('USER_INFO')!);
 
 let senderId = ref(user.id);
-console.log(senderId);
-
 const chatRef = ref<InstanceType<typeof VoiceChat> | null>(null);
 
 handleListUser();
@@ -98,9 +78,6 @@ handleListUser();
 <template>
   <div class="w-screen h-screen p-4 bg-[#f0f0f0] flex flex-col">
     <VoiceChat ref="chatRef" :sender-id="senderId" :receiver-id="activeUser.id"></VoiceChat>
-    <!-- <div class="header h-[60px]">
-        {{ users }}
-      </div> -->
     <div class="body flex flex-1">
       <div class="user-list w-[300px] flex flex-col">
         <!-- <div class="search-bar h-[55px] bg-[#fff] mb-4 rounded-xl"></div> -->

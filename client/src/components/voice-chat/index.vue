@@ -24,23 +24,29 @@ let remoteAudio: any;
 let localStream: any = null;
 let remoteStream: any = null;
 let pc: any;
+// 获取许可
 function init() {
   navigator.mediaDevices
     .getUserMedia(localStreamConstraints)
-    .then(gotStream)
+    .then((stream) => {
+      localStream = stream;
+      // 将本地流作为本地音频标签的源
+      localAudio.srcObject = stream;
+      createRTCPeerConnection()
+    })
     .catch(function (e) {
       alert('getUserMedia() error: ' + e.name);
     });
 }
+// 创建peer对象
 function createRTCPeerConnection() {
-  // new 一个RTCPeerConnection对象 传入turn服务器参数
   pc = new RTCPeerConnection(turnConfig);
   pc.onicecandidate = handleIceCandidate;
   pc.onaddstream = handleRemoteStreamAdded;
   pc.onremovestream = handleRemoteStreamRemoved;
   pc.addStream(localStream);
-
 }
+// ice 候选地址回调 收到回调就传给对方
 function handleIceCandidate(event: any) {
   if (event.candidate) {
     sendSDPMessage({
@@ -57,33 +63,29 @@ function handleIceCandidate(event: any) {
     console.log('End of candidates.');
   }
 }
+// 对方流
 function handleRemoteStreamAdded(event: any) {
-  console.log('Remote stream added.');
   remoteStream = event.stream;
   remoteAudio.srcObject = remoteStream;
 }
 function handleRemoteStreamRemoved() {
 }
-function gotStream(stream: any) {
-  localStream = stream;
-  // 将本地流作为本地音频标签的源
-  localAudio.srcObject = stream;
-  createRTCPeerConnection()
-}
-
 
 // --------- 业务逻辑
 // 通话对方的id
 let targetId: number;
 // 双方是否建立了连接
 let isChannelReady = false
+const status = ref(0) //0: 无状态 1：呼叫者状态 2：被呼叫者的状态
 
+// 发送信令
 function sendSDPMessage(msg: SDPMessage) {
   socket.emit('send_sdp', msg);
 }
 
 // 发起呼叫请求
 function call(userId: number) {
+  status.value = 1
   socket.emit('req_call', userId);
 }
 
@@ -93,10 +95,11 @@ onMounted(() => {
   init()
 });
 
-
+// 呼叫者
 let caller: User;
 // 监听呼叫请求
 socket.on('req_call', (u) => {
+  status.value = 2
   caller = u
 });
 
@@ -105,23 +108,18 @@ socket.on('res_call', (msg) => {
   if (msg.ack === CallAck.AGREE) {
     targetId = msg.user.id
     isChannelReady = true
-    //发送offer
     pc.createOffer().then((offer: any) => {
-      // console.log(offer);
       pc.setLocalDescription(offer);
+      //发送offer
       sendSDPMessage({
         type: 'offer',
         data: offer,
         senderId: props.senderId,
         receiverId: targetId
       });
-      // sendMessage(offer)
-      console.log('create offer success');
     });
   }
-  console.log(msg);
 });
-
 
 //监听SDP
 socket.on('receive_sdp', (msg) => {
@@ -130,7 +128,6 @@ socket.on('receive_sdp', (msg) => {
     case 'offer':
       pc.setRemoteDescription(new RTCSessionDescription(msg.data));
       pc.createAnswer().then((answer: any) => {
-        console.log('create answer success');
         pc.setLocalDescription(answer);
         sendSDPMessage({
           type: 'answer',
@@ -141,7 +138,6 @@ socket.on('receive_sdp', (msg) => {
       })
       break;
     case 'answer':
-      console.log('setRemoteDescription');
       pc.setRemoteDescription(new RTCSessionDescription(msg.data));
       break
     case 'candidate':
@@ -153,7 +149,6 @@ socket.on('receive_sdp', (msg) => {
         pc.addIceCandidate(candidate);
       }
       break
-
     default:
       break;
   }
@@ -177,7 +172,13 @@ defineExpose({
   <div class="fixed top-10 right-20 bg-white p-2 shadow-md">
     <audio id="localAudio" class="" autoplay controls muted></audio>
     <audio id="remoteAudio" class="" autoplay controls muted></audio>
-    <div>
+    <!-- 呼叫者 -->
+    <div class="caller" v-show="status === 1">
+      正在发起呼叫
+    </div>
+    <!-- 被呼叫 -->
+    <div class="called" v-show="status === 2">
+      <p> 有人对你发起呼叫，请问是否接受</p>
       <button class="mr-2" @click="agreeCall">接受</button>
       <button>拒绝</button>
     </div>
