@@ -26,13 +26,17 @@ function initSocket(io) {
         })
         // 响应呼叫
         socket.on('res_call', (msg) => {
-            console.log(msg);
             let u1 = userMapper[msg.user.id]
             io.sockets.to(u1.socketId).emit("res_call", { ack: msg.ack, user: { id: user.id, username: user.username } })
         })
         socket.on('send_sdp', (message) => {
             let rUser = userMapper[message.receiverId]
             io.sockets.to(rUser.socketId).emit("receive_sdp", message)
+        })
+
+        socket.on('send_msg', function (msg) {
+            let u1 = userMapper[msg.receiverId]
+            io.sockets.to(u1.socketId).emit("receive_msg", msg)
         })
         socket.on('ipaddr', function () {
             var ifaces = os.networkInterfaces();

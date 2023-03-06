@@ -23,6 +23,11 @@
           />
         </div>
         <div class="flex justify-center">
+          <div class="w-[300px] text-right">
+            <span>注册</span>
+          </div>
+        </div>
+        <div class="flex justify-center">
           <button class="w-[300px] p-2 bg-blue-500 text-white rounded" @click="handleLogin">Login</button>
         </div>
       </div>

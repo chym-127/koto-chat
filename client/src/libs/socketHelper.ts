@@ -12,11 +12,18 @@ enum CallAck {
   HANGUP, //挂断
 }
 
+interface Message {
+  sendTime?: number;
+  senderId: number;
+  receiverId: number;
+  content: any;
+}
+
 // 呼叫响应信息
 interface ResCallMessage {
   ack: CallAck;
   user: User;
-  room?: string 
+  room?: string;
 }
 // 发送信令
 interface SDPMessage {
@@ -29,9 +36,10 @@ interface SDPMessage {
 interface ServerToClientEvents {
   on_users: (userMessage: UserMessage) => void;
   req_call: (user: User) => void;
+  res_call: (resCallMessage: ResCallMessage) => void;
   send_sdp: (msg: SDPMessage) => void;
   receive_sdp: (msg: SDPMessage) => void;
-  res_call: (resCallMessage: ResCallMessage) => void;
+  receive_msg: (msg: Message) => void;
 }
 
 interface ClientToServerEvents {
@@ -39,6 +47,7 @@ interface ClientToServerEvents {
   res_call: (resCallMessage: ResCallMessage) => void;
   send_sdp: (msg: SDPMessage) => void;
   receive_sdp: (msg: SDPMessage) => void;
+  send_msg: (msg: Message) => void;
 }
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -51,4 +60,4 @@ function initSocket() {
 }
 export { socket, initSocket, CallAck };
 
-export type { UserMessage, ResCallMessage, SDPMessage };
+export type { UserMessage, ResCallMessage, SDPMessage, Message };

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { CallAck, SDPMessage, socket } from '../../libs/socketHelper';
 import { User } from '../home/types';
 import { CallState } from './types';
+import ringtonePath from '../../assets/ringtone.mp3';
+
 const props = defineProps({
   senderId: {
     type: Number,
@@ -22,8 +24,10 @@ const localStreamConstraints = {
 };
 let localAudio: any;
 let remoteAudio: any;
+let ringtonesAudio: any;
 let localStream: any = null;
 let remoteStream: any = null;
+
 let pc: any;
 // 获取许可
 function init() {
@@ -93,6 +97,17 @@ function call(user: User) {
 onMounted(() => {
   localAudio = document.querySelector('#localAudio');
   remoteAudio = document.querySelector('#remoteAudio');
+  ringtonesAudio = document.querySelector('#ringtonesAudio');
+  ringtonesAudio.addEventListener(
+    'ended',
+    function () {
+      if (status.value === CallState.CALLED || status.value === CallState.CALLER) {
+        ringtonesAudio.currentTime = 0;
+        ringtonesAudio.play();
+      }
+    },
+    false
+  );
   remoteAudio.ontimeupdate = function () {
     const result = new Date(remoteAudio.currentTime * 1000).toISOString().slice(11, 19);
     duration.value = result;
@@ -162,6 +177,15 @@ socket.on('receive_sdp', (msg) => {
   }
 });
 
+watch(status, () => {
+  if (status.value === CallState.CALLED || status.value === CallState.CALLER) {
+    ringtonesAudio.currentTime = 0;
+    ringtonesAudio.play();
+  } else {
+    ringtonesAudio.pause();
+  }
+});
+
 // 接受通话
 function agreeCall() {
   isChannelReady = true;
@@ -200,12 +224,14 @@ defineExpose({
 </script>
 <template>
   <div
-    class="top-10 right-20 bg-white p-2 w-[250px] shadow-md call-center rounded"
-    :class="status === CallState.NORMAL ? 'hide' : 'show'"
+    class="bg-white p-2 w-[250px] h-[348px] shadow-md call-center rounded-xl"
+    :class="status === CallState.NORMAL ? null : 'show'"
   >
     <audio id="localAudio" class="invisible absolute" autoplay controls muted></audio>
     <audio id="remoteAudio" class="invisible absolute" autoplay controls></audio>
-    <div class="p-8" v-if="status !== CallState.NORMAL">
+    <audio id="ringtonesAudio" :src="ringtonePath" class="invisible absolute"></audio>
+
+    <div class="p-8" v-show="status !== CallState.NORMAL">
       <div class="user w-full flex flex-col items-center mb-24">
         <div class="pic h-[64px] w-[64px] bg-[#f0f0f0] rounded-full"></div>
         <div class="username mt-2">用户名</div>
@@ -234,16 +260,15 @@ defineExpose({
 
 <style lang="less" scoped>
 .call-center {
-  transition: transform 0.7s;
-  top: 0;
-  position: fixed;
+  transition: top .5s;
+  top: -100%;
+  position: absolute;
+  right: 20px;
 }
 .call-center.hide {
   // top: -100%;
-  transform: translateY(-100%);
 }
 .call-center.show {
-  // top: 10px;
-  transform: translateY(10px);
+  top: 10px;
 }
 </style>

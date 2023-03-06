@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { Res } from './type';
-axios.defaults.baseURL = 'http://localhost:8000';
+axios.defaults.baseURL = 'http://150.158.13.8:8000';
 axios.defaults.headers.common['Token'] = '1111';
 
 // 添加请求拦截器

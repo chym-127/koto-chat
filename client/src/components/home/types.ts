@@ -9,6 +9,12 @@ interface User {
   state: UserState;
 }
 
+interface RecentMsg {
+  content: string;
+  newMsgCount: number;
+  isTyping: boolean;
+}
+
 export { UserState };
 
-export type { User };
+export type { User, RecentMsg };
