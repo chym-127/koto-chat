@@ -26,12 +26,9 @@ function initSocket(io) {
         })
         // 响应呼叫
         socket.on('res_call', (msg) => {
-            if (msg.ack === 1) {
-                let u1 = userMapper[msg.user.id]
-                const room = `${u1}-${user.id}`
-                io.sockets.to(u1.socketId).emit("res_call", { ack: 1, user: { id: user.id, username: user.username } })
-                // socket.emit("res_call", { ack: 3, user: { id: user.id, username: user.username }, room: room })
-            }
+            console.log(msg);
+            let u1 = userMapper[msg.user.id]
+            io.sockets.to(u1.socketId).emit("res_call", { ack: msg.ack, user: { id: user.id, username: user.username } })
         })
         socket.on('send_sdp', (message) => {
             let rUser = userMapper[message.receiverId]

@@ -65,9 +65,13 @@ function sendMessage() {
 
 // 发起呼叫请求
 function handleRequestCall() {
-  chatRef.value!.call(activeUser.id)
+  chatRef.value!.call(activeUser)
 }
 
+function logout() {
+  localStorage.clear()
+  location.reload()
+}
 
 let senderId = ref(user.id);
 const chatRef = ref<InstanceType<typeof VoiceChat> | null>(null);
@@ -80,6 +84,10 @@ handleListUser();
     <VoiceChat ref="chatRef" :sender-id="senderId" :receiver-id="activeUser.id"></VoiceChat>
     <div class="body flex flex-1">
       <div class="user-list w-[300px] flex flex-col">
+        <h1>{{user.username}}</h1>
+        <div>
+          <button @click="logout">Logout</button>
+        </div>
         <!-- <div class="search-bar h-[55px] bg-[#fff] mb-4 rounded-xl"></div> -->
         <div class="users-box cursor-pointer flex-1 bg-[#fff] p-2 rounded-xl">
           <div class="user border relative border-black-600 h-[40px] mb-2 flex items-center rounded"

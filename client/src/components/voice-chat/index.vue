@@ -2,11 +2,12 @@
 import { onMounted, ref } from 'vue';
 import { CallAck, SDPMessage, socket } from '../../libs/socketHelper';
 import { User } from '../home/types';
+import { CallState } from './types';
 const props = defineProps({
   senderId: {
     type: Number,
     required: true,
-  }
+  },
 });
 
 const turnConfig = {
@@ -32,7 +33,6 @@ function init() {
       localStream = stream;
       // 将本地流作为本地音频标签的源
       localAudio.srcObject = stream;
-      createRTCPeerConnection()
     })
     .catch(function (e) {
       alert('getUserMedia() error: ' + e.name);
@@ -54,10 +54,10 @@ function handleIceCandidate(event: any) {
       data: {
         label: event.candidate.sdpMLineIndex,
         id: event.candidate.sdpMid,
-        candidate: event.candidate.candidate
+        candidate: event.candidate.candidate,
       },
       senderId: props.senderId,
-      receiverId: targetId
+      receiverId: targetUser!.id,
     });
   } else {
     console.log('End of candidates.');
@@ -65,49 +65,53 @@ function handleIceCandidate(event: any) {
 }
 // 对方流
 function handleRemoteStreamAdded(event: any) {
+  status.value = CallState.CALLING;
   remoteStream = event.stream;
   remoteAudio.srcObject = remoteStream;
 }
-function handleRemoteStreamRemoved() {
-}
+function handleRemoteStreamRemoved() {}
 
 // --------- 业务逻辑
-// 通话对方的id
-let targetId: number;
+// 通话对方
+let targetUser: User | null;
 // 双方是否建立了连接
-let isChannelReady = false
-const status = ref(0) //0: 无状态 1：呼叫者状态 2：被呼叫者的状态
-
+let isChannelReady = false;
+const status = ref<CallState>(CallState.NORMAL); //0: 无状态 1：呼叫者状态 2：被呼叫者的状态
+const duration = ref('');
 // 发送信令
 function sendSDPMessage(msg: SDPMessage) {
   socket.emit('send_sdp', msg);
 }
 
 // 发起呼叫请求
-function call(userId: number) {
-  status.value = 1
-  socket.emit('req_call', userId);
+function call(user: User) {
+  status.value = CallState.CALLER;
+  targetUser = user;
+  socket.emit('req_call', targetUser.id);
 }
 
 onMounted(() => {
   localAudio = document.querySelector('#localAudio');
   remoteAudio = document.querySelector('#remoteAudio');
-  init()
+  remoteAudio.ontimeupdate = function () {
+    const result = new Date(remoteAudio.currentTime * 1000).toISOString().slice(11, 19);
+    duration.value = result;
+  };
+  init();
 });
 
-// 呼叫者
-let caller: User;
 // 监听呼叫请求
 socket.on('req_call', (u) => {
-  status.value = 2
-  caller = u
+  status.value = CallState.CALLED;
+  targetUser = u;
 });
 
 //监听呼叫响应
 socket.on('res_call', (msg) => {
+  // 同意通话
   if (msg.ack === CallAck.AGREE) {
-    targetId = msg.user.id
-    isChannelReady = true
+    isChannelReady = true;
+    createRTCPeerConnection();
     pc.createOffer().then((offer: any) => {
       pc.setLocalDescription(offer);
       //发送offer
@@ -115,15 +119,19 @@ socket.on('res_call', (msg) => {
         type: 'offer',
         data: offer,
         senderId: props.senderId,
-        receiverId: targetId
+        receiverId: targetUser!.id,
       });
     });
+  }
+  // 挂断请求
+  if (status.value !== CallState.NORMAL && msg.ack === CallAck.HANGUP && targetUser!.id === msg.user.id) {
+    recovery();
   }
 });
 
 //监听SDP
 socket.on('receive_sdp', (msg) => {
-  let type = msg.type
+  let type = msg.type;
   switch (type) {
     case 'offer':
       pc.setRemoteDescription(new RTCSessionDescription(msg.data));
@@ -133,54 +141,109 @@ socket.on('receive_sdp', (msg) => {
           type: 'answer',
           data: answer,
           senderId: msg.receiverId,
-          receiverId: msg.senderId
+          receiverId: msg.senderId,
         });
-      })
+      });
       break;
     case 'answer':
       pc.setRemoteDescription(new RTCSessionDescription(msg.data));
-      break
+      break;
     case 'candidate':
       if (isChannelReady) {
         var candidate = new RTCIceCandidate({
           sdpMLineIndex: msg.data.label,
-          candidate: msg.data.candidate
+          candidate: msg.data.candidate,
         });
         pc.addIceCandidate(candidate);
       }
-      break
+      break;
     default:
       break;
   }
-})
+});
 
 // 接受通话
 function agreeCall() {
-  isChannelReady = true
-  targetId = caller.id
+  isChannelReady = true;
+  createRTCPeerConnection();
   socket.emit('res_call', {
     ack: CallAck.AGREE,
-    user: caller,
+    user: targetUser!,
   });
 }
 
+//发起挂断请求
+function hangUp() {
+  if (targetUser) {
+    socket.emit('res_call', {
+      ack: CallAck.HANGUP,
+      user: targetUser,
+    });
+    recovery();
+  }
+}
+
+// 恢复到正常状态
+function recovery() {
+  isChannelReady = false;
+  targetUser = null;
+  status.value = CallState.NORMAL;
+  remoteAudio.srcObject = null;
+}
+
 defineExpose({
-  call
+  call,
 });
+
+//#cd3a4a red
+//#1ccf11 green
 </script>
 <template>
-  <div class="fixed top-10 right-20 bg-white p-2 shadow-md">
-    <audio id="localAudio" class="" autoplay controls muted></audio>
-    <audio id="remoteAudio" class="" autoplay controls muted></audio>
-    <!-- 呼叫者 -->
-    <div class="caller" v-show="status === 1">
-      正在发起呼叫
-    </div>
-    <!-- 被呼叫 -->
-    <div class="called" v-show="status === 2">
-      <p> 有人对你发起呼叫，请问是否接受</p>
-      <button class="mr-2" @click="agreeCall">接受</button>
-      <button>拒绝</button>
+  <div
+    class="top-10 right-20 bg-white p-2 w-[250px] shadow-md call-center rounded"
+    :class="status === CallState.NORMAL ? 'hide' : 'show'"
+  >
+    <audio id="localAudio" class="invisible absolute" autoplay controls muted></audio>
+    <audio id="remoteAudio" class="invisible absolute" autoplay controls></audio>
+    <div class="p-8" v-if="status !== CallState.NORMAL">
+      <div class="user w-full flex flex-col items-center mb-24">
+        <div class="pic h-[64px] w-[64px] bg-[#f0f0f0] rounded-full"></div>
+        <div class="username mt-2">用户名</div>
+      </div>
+      <div class="duration text-center" v-show="status === CallState.CALLING">
+        <span>{{ duration }}</span>
+      </div>
+      <div class="operation flex" :class="status === CallState.CALLED ? 'justify-between' : 'justify-center'">
+        <div class="text-center" @click="hangUp">
+          <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#cd3a4a] flex justify-center items-center mb-1">
+            <img src="../../assets/call.png" class="h-[24px] w-[24px]" alt="" srcset="" />
+          </div>
+          <span class="text-center">{{ status === CallState.CALLED ? '拒绝' : '取消' }}</span>
+        </div>
+
+        <div class="text-center" v-if="status === CallState.CALLED" @click="agreeCall">
+          <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#1ccf11] flex justify-center items-center mb-1">
+            <img src="../../assets/call.png" class="h-[24px] w-[24px] rotate-[135deg]" alt="" srcset="" />
+          </div>
+          <span class="text-center">接听</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
+
+<style lang="less" scoped>
+.call-center {
+  transition: transform 0.7s;
+  top: 0;
+  position: fixed;
+}
+.call-center.hide {
+  // top: -100%;
+  transform: translateY(-100%);
+}
+.call-center.show {
+  // top: 10px;
+  transform: translateY(10px);
+}
+</style>

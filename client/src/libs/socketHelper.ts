@@ -9,7 +9,7 @@ interface UserMessage {
 enum CallAck {
   AGREE = 1, //同意呼叫请求
   REJECT, //拒绝呼叫请求
-  STARTCONN, //开始连接
+  HANGUP, //挂断
 }
 
 // 呼叫响应信息
