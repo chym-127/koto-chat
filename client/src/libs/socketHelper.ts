@@ -52,7 +52,7 @@ interface ClientToServerEvents {
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 function initSocket() {
-  socket = io('http://localhost:8000', {
+  socket = io('http://150.158.13.8:8000', {
     auth: {
       token: localStorage.getItem('TOKEN'),
     },
