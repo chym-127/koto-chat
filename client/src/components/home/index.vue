@@ -5,6 +5,7 @@ import { listUser } from '../../request/api';
 import { RecentMsg, User, UserState } from './types';
 import phoneCall from '../../assets/phone-call.png';
 import sendPic from '../../assets/send.png';
+import { getAvatarByUserId } from '../../libs/avatar';
 import { socket, UserMessage, Message } from '../../libs/socketHelper';
 let users = reactive<User[]>([]);
 let activeUser = reactive<User>({
@@ -30,7 +31,6 @@ function handleListUser() {
             newMsgCount: 0,
             isTyping: false,
           };
-          console.log(recentMapper);
         }
       });
     }
@@ -53,6 +53,11 @@ socket.on('on_users', (msg: UserMessage) => {
   switch (msg.type) {
     case 'add':
       users.push(msg.user);
+      recentMapper[+user.id] = {
+        content: '',
+        newMsgCount: 0,
+        isTyping: false,
+      };
       break;
     case 'update':
       for (let index = 0; index < users.length; index++) {
@@ -143,16 +148,17 @@ handleListUser();
                 class="state absolute w-2 h-2 bottom-[1px] right-[4px] rounded-full"
                 :class="user.state === UserState.OFFLINE ? 'bg-red-500' : 'bg-green-500'"
               ></div>
+              <img :src="getAvatarByUserId(user.id % 20)" class="w-[40px] h-[40px] rounded-full" alt="" srcset="" />
             </div>
             <div
-              class="info flex h-full flex-1 flex items-start border-b text-black ml-[12px]"
+              class="info flex h-full w-0 flex-1 flex items-start border-b text-black ml-[12px]"
               :class="activeUserIndex === index ? 'text-black' : 'text-black'"
             >
-              <div class="flex flex-1 flex-col">
+              <div class="flex flex-1 max-w-full flex-col">
                 <span class="text font-medium mt-1">{{ user.username }}</span>
-                <span class="text-xs text-[#cfcfcf]">
+                <div class="text-xs text-[#cfcfcf] text-ellipsis whitespace-nowrap">
                   {{ recentMapper[user.id] ? recentMapper[user.id].content : '' }}
-                </span>
+                </div>
               </div>
               <div class="w-[40px] h-full flex items-center justify-center">
                 <div
@@ -193,8 +199,8 @@ handleListUser();
             >
               <div class="msg-own">{{ msg.senderId === activeUser.id ? activeUser.username : user.username }}</div>
               <div
-                class="msg-context rounded-b-lg bg-[#c9e5fb] p-2 min-h-[40px] max-w-[70%] whitespace-normal break-all"
-                :class="msg.senderId === activeUser.id ? 'rounded-tr-lg' : 'rounded-tl-lg'"
+                class="msg-context rounded-b-xl bg-[#c9e5fb] px-4 py-2 min-h-[40px] max-w-[70%] whitespace-normal break-all"
+                :class="msg.senderId === activeUser.id ? 'rounded-tr-xl' : 'rounded-tl-xl'"
               >
                 {{ msg.content }}
               </div>
