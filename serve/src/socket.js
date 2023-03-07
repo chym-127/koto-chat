@@ -13,6 +13,9 @@ function initSocket(io) {
             ...user,
             socketId: socket.id
         }
+        socket.on('disconnect', function() {
+            updateUser(user.id, { state: 1 })
+         });
         // 发起呼叫请求
         socket.on('req_call', (userId) => {
             const u = userMapper[userId]

@@ -1,6 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 import { Res } from './type';
-axios.defaults.baseURL = 'http://150.158.13.8:8000';
+console.log(import.meta.env.VITE_BASE_API_URL);
+
+axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL;
 axios.defaults.headers.common['Token'] = '1111';
 
 // 添加请求拦截器

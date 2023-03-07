@@ -4,6 +4,7 @@ import { CallAck, SDPMessage, socket } from '../../libs/socketHelper';
 import { User } from '../home/types';
 import { CallState } from './types';
 import ringtonePath from '../../assets/ringtone.mp3';
+import { getAvatarByUserId } from '../../libs/avatar';
 
 const props = defineProps({
   senderId: {
@@ -117,8 +118,15 @@ onMounted(() => {
 
 // 监听呼叫请求
 socket.on('req_call', (u) => {
-  status.value = CallState.CALLED;
-  targetUser = u;
+  if (status.value !== CallState.NORMAL) {
+    socket.emit('res_call', {
+      ack: CallAck.ISCALLING,
+      user: u,
+    });
+  } else {
+    status.value = CallState.CALLED;
+    targetUser = u;
+  }
 });
 
 //监听呼叫响应
@@ -137,6 +145,10 @@ socket.on('res_call', (msg) => {
         receiverId: targetUser!.id,
       });
     });
+  }
+  if (msg.ack === CallAck.ISCALLING) {
+    alert('对方正在通话中');
+    recovery();
   }
   // 挂断请求
   if (status.value !== CallState.NORMAL && msg.ack === CallAck.HANGUP && targetUser!.id === msg.user.id) {
@@ -178,6 +190,7 @@ socket.on('receive_sdp', (msg) => {
 });
 
 watch(status, () => {
+  //播放铃声
   if (status.value === CallState.CALLED || status.value === CallState.CALLER) {
     ringtonesAudio.currentTime = 0;
     ringtonesAudio.play();
@@ -233,8 +246,16 @@ defineExpose({
 
     <div class="p-8" v-show="status !== CallState.NORMAL">
       <div class="user w-full flex flex-col items-center mb-24">
-        <div class="pic h-[64px] w-[64px] bg-[#f0f0f0] rounded-full"></div>
-        <div class="username mt-2">用户名</div>
+        <div class="pic h-[64px] w-[64px] bg-[#f0f0f0] rounded-full">
+          <img
+            v-if="targetUser"
+            :src="getAvatarByUserId(targetUser!.id % 20)"
+            class="h-[64px] w-[64px] bg-[#f0f0f0] rounded-full"
+            alt=""
+            srcset=""
+          />
+        </div>
+        <div class="username mt-2">{{ targetUser?.username }}</div>
       </div>
       <div class="duration text-center" v-show="status === CallState.CALLING">
         <span>{{ duration }}</span>
@@ -260,7 +281,7 @@ defineExpose({
 
 <style lang="less" scoped>
 .call-center {
-  transition: top .5s;
+  transition: top 0.5s;
   top: -100%;
   position: absolute;
   right: 20px;

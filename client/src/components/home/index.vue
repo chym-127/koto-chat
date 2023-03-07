@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, nextTick } from 'vue';
+import { reactive, ref, nextTick, computed } from 'vue';
 import VoiceChat from '../voice-chat/index.vue';
 import { listUser } from '../../request/api';
 import { RecentMsg, User, UserState } from './types';
@@ -68,7 +68,14 @@ socket.on('on_users', (msg: UserMessage) => {
         }
       }
       break;
-
+    case 'remove':
+      for (let index = 0; index < users.length; index++) {
+        const user = users[index];
+        if (user.id === msg.user.id) {
+          users.splice(index, 1);
+        }
+      }
+      break;
     default:
       break;
   }
@@ -77,6 +84,9 @@ socket.on('on_users', (msg: UserMessage) => {
 const message = ref('');
 
 function sendMessage() {
+  if (!message.value.trim()) {
+    return;
+  }
   let msg = {
     senderId: user.id,
     receiverId: activeUser.id,
@@ -114,6 +124,13 @@ function logout() {
   localStorage.clear();
   location.reload();
 }
+
+const sendInputPlaceholder = computed(() => {
+  if (activeUser.state === UserState.OFFLINE) {
+    return '对方不在线，无法发送消息';
+  }
+  return '输入消息按Enter发送';
+});
 
 let senderId = ref(user.id);
 const chatRef = ref<InstanceType<typeof VoiceChat> | null>(null);
@@ -185,7 +202,11 @@ handleListUser();
           <div class="h-full flex items-center">
             <span class="text-lg font-semibold">{{ activeUser.username }}</span>
           </div>
-          <div class="cursor-pointer" @click="handleRequestCall" v-show="activeUser.id">
+          <div
+            class="cursor-pointer"
+            @click="handleRequestCall"
+            v-show="activeUser.id && activeUser.state === UserState.ONLINE"
+          >
             <img :src="phoneCall" class="w-6 h-6" alt="" srcset="" />
           </div>
         </div>
@@ -216,12 +237,26 @@ handleListUser();
           <div class="send-box border h-full relative p-2 flex items-center">
             <input
               v-model="message"
+              :disabled="activeUser.state === UserState.OFFLINE"
               type="text"
               class="w-full h-full p-1 flex-1"
               @keyup.enter="sendMessage"
-              placeholder="输入消息按Enter发送"
+              :placeholder="sendInputPlaceholder"
             />
-            <img class="w-6 h-6 cursor-pointer" :src="sendPic" alt="" srcset="" />
+            <img
+              class="w-6 h-6 cursor-pointer"
+              :src="sendPic"
+              @click="
+                () => {
+                  if (activeUser.state === UserState.OFFLINE) {
+                    return;
+                  }
+                  sendMessage();
+                }
+              "
+              alt=""
+              srcset=""
+            />
           </div>
         </div>
       </div>

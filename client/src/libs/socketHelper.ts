@@ -10,6 +10,7 @@ enum CallAck {
   AGREE = 1, //同意呼叫请求
   REJECT, //拒绝呼叫请求
   HANGUP, //挂断
+  ISCALLING,
 }
 
 interface Message {
@@ -52,7 +53,7 @@ interface ClientToServerEvents {
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 function initSocket() {
-  socket = io('http://150.158.13.8:8000', {
+  socket = io(import.meta.env.VITE_BASE_API_URL, {
     auth: {
       token: localStorage.getItem('TOKEN'),
     },
