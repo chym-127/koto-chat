@@ -145,13 +145,10 @@ socket.on('res_call', (msg) => {
         receiverId: targetUser!.id,
       });
     });
-  }
-  if (msg.ack === CallAck.ISCALLING) {
-    alert('对方正在通话中');
+  } else if (msg.ack === CallAck.ISCALLING) {
     recovery();
-  }
-  // 挂断请求
-  if (status.value !== CallState.NORMAL && msg.ack === CallAck.HANGUP && targetUser!.id === msg.user.id) {
+    alert('对方正在通话中');
+  } else if (status.value !== CallState.NORMAL && msg.ack === CallAck.HANGUP && targetUser!.id === msg.user.id) {
     recovery();
   }
 });
@@ -193,7 +190,9 @@ watch(status, () => {
   //播放铃声
   if (status.value === CallState.CALLED || status.value === CallState.CALLER) {
     ringtonesAudio.currentTime = 0;
-    ringtonesAudio.play();
+    setTimeout(() => {
+      ringtonesAudio.play();
+    }, 300);
   } else {
     ringtonesAudio.pause();
   }

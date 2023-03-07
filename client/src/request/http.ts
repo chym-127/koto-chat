@@ -1,7 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
 import { Res } from './type';
-console.log(import.meta.env.VITE_BASE_API_URL);
-
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL;
 axios.defaults.headers.common['Token'] = '1111';
 

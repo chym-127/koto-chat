@@ -19,7 +19,6 @@ function initSocket(io) {
         // 发起呼叫请求
         socket.on('req_call', (userId) => {
             const u = userMapper[userId]
-            console.log(u);
             if (u) {
                 io.sockets.to(u.socketId).emit('req_call', {
                     id: user.id,

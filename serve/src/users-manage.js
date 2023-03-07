@@ -11,7 +11,6 @@ function initUsers() {
             state: 1 //1：离线 2：在线
         }
     })
-    console.log(users);
 }
 
 function addUser(user) {
