@@ -9,7 +9,7 @@ function comeSoon() {
 }
 </script>
 <template>
-  <div class="w-screen h-screen bg-[#f0f0f0] flex relative">
+  <div class="w-full h-full bg-[#f0f0f0] flex relative">
     <div class="left-box w-[74px] h-full bg-[#F9F9F9] flex flex-col justify-center items-between">
       <div class="logo mt-[36px] h-[80px]"></div>
       <div class="menus w-full flex flex-col justify-start items-center space-y-4 flex-1 h-0">

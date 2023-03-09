@@ -26,7 +26,7 @@ function loginSuccess() {
 </script>
 
 <template>
-  <div class="w-screen h-screen overflow-hidden">
+  <div class="w-screen h-screen overflow-hidden min-w-[1024px]">
     <Login
       class="z-10 absolute top-0 left-0"
       v-if="!isLogin"

@@ -6,6 +6,7 @@ import { RecentMsg, User, UserState } from './types';
 import phoneCall from '../../assets/phone-call.png';
 import sendPic from '../../assets/send.png';
 import { getAvatarByUserId } from '../../libs/avatar';
+import { useMessageStore } from '@store/index';
 import { socket, UserMessage, Message } from '../../libs/socketHelper';
 let users = reactive<User[]>([]);
 let activeUser = reactive<User>({
@@ -17,6 +18,9 @@ const activeUserIndex = ref(-1);
 let user = JSON.parse(localStorage.getItem('USER_INFO')!);
 
 const msgMapper = reactive<{ [key: number]: Message[] }>({});
+
+const msgStore = useMessageStore();
+
 const recentMapper = reactive<{ [key: number]: RecentMsg }>({});
 
 function handleListUser() {
@@ -95,6 +99,7 @@ function sendMessage() {
   };
   socket.emit('send_msg', msg);
   msgMapper[activeUser.id].push(msg);
+  msgStore.addMsg(activeUser.id, msg);
   recentMapper[activeUser.id].content = msg.content;
 
   message.value = '';
@@ -105,6 +110,7 @@ function sendMessage() {
 
 socket.on('receive_msg', (msg) => {
   msgMapper[msg.senderId].push(msg);
+  msgStore.addMsg(msg.senderId, msg);
   recentMapper[msg.senderId].content = msg.content;
   if (msg.senderId === activeUser.id) {
     nextTick(() => {
@@ -136,7 +142,7 @@ handleListUser();
 
 <template>
   <div class="w-full h-full bg-[#f0f0f0] flex relative">
-    <CallPhone ref="chatRef" class="z-50" :sender-id="senderId"></CallPhone>
+    <CallPhone ref="callPhoneRef" class="z-50" :sender-id="senderId"></CallPhone>
     <div class="center-box w-[375px] border-r h-full bg-[#fff]">
       <div class="profile mt-[30px] w-full flex flex-col justify-center items-center">
         <div class="avatar w-[105px] h-[105px] rounded-full relative">
