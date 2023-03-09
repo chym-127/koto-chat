@@ -262,14 +262,14 @@ defineExpose({
       <div class="operation flex" :class="status === CallState.CALLED ? 'justify-between' : 'justify-center'">
         <div class="text-center" @click="hangUp">
           <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#cd3a4a] flex justify-center items-center mb-1">
-            <img src="../../assets/call.png" class="h-[24px] w-[24px]" alt="" srcset="" />
+            <img src="@assets/call.png" class="h-[24px] w-[24px]" alt="" srcset="" />
           </div>
           <span class="text-center">{{ status === CallState.CALLED ? '拒绝' : '取消' }}</span>
         </div>
 
         <div class="text-center" v-if="status === CallState.CALLED" @click="agreeCall">
           <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#1ccf11] flex justify-center items-center mb-1">
-            <img src="../../assets/call.png" class="h-[24px] w-[24px] rotate-[135deg]" alt="" srcset="" />
+            <img src="@assets/call.png" class="h-[24px] w-[24px] rotate-[135deg]" alt="" srcset="" />
           </div>
           <span class="text-center">接听</span>
         </div>

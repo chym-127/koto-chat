@@ -1,17 +1,23 @@
-import VueRouter from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Chat from '@pages/chat/index.vue';
-
-
-
-const About = { template: '<div>About</div>' };
+import Default from '../layouts/default.vue';
 
 const routes = [
-  { path: '/', component: Chat },
-  { path: '/about', component: About },
+  {
+    path: '/',
+    redirect: "/chat",
+    component: Default,
+    children: [
+      {
+        path: '/chat',
+        component: Chat,
+      },
+    ],
+  },
 ];
 
-const router = VueRouter.createRouter({
-  history: VueRouter.createWebHashHistory(),
+const router = createRouter({
+  history: createWebHashHistory(),
   routes,
 });
 

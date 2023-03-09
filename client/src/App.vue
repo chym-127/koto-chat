@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { initSocket } from './libs/socketHelper';
-import Chat from '@pages/chat/index.vue';
 import Login from './components/login/index.vue';
 
 let isLogin = localStorage.getItem('TOKEN') ? ref(true) : ref(false);
@@ -15,7 +14,7 @@ function loginSuccess() {
   initSocket();
   loginBoxVisible.value = false;
   setTimeout(() => {
-    isLogin.value = true
+    isLogin.value = true;
   }, 1000);
 }
 </script>
@@ -28,6 +27,8 @@ function loginSuccess() {
       @success="loginSuccess"
       :visible="loginBoxVisible"
     ></Login>
-    <Chat v-if="isLogin || !loginBoxVisible" class="absolute top-0 left-0"></Chat>
+    <div class="w-full h-full" v-if="isLogin || !loginBoxVisible">
+      <RouterView></RouterView>
+    </div>
   </div>
 </template>
