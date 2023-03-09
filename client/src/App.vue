@@ -3,6 +3,12 @@ import { ref } from 'vue';
 import { initSocket } from './libs/socketHelper';
 import Login from './components/login/index.vue';
 
+import { useUserStore } from '@store/index';
+
+const userStore = useUserStore();
+
+console.log(userStore.isLogin);
+
 let isLogin = localStorage.getItem('TOKEN') ? ref(true) : ref(false);
 if (isLogin) {
   initSocket();
