@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
-import { CallAck, SDPMessage, socket } from '../../libs/socketHelper';
-import { User } from '../home/types';
+import { CallAck, SDPMessage, socket } from '@libs/socketHelper';
+import { User } from '../types';
 import { CallState } from './types';
-import ringtonePath from '../../assets/ringtone.mp3';
-import { getAvatarByUserId } from '../../libs/avatar';
+import ringtonePath from '@assets/ringtone.mp3';
+import { getAvatarByUserId } from '@libs/avatar';
 
 const props = defineProps({
   senderId: {
@@ -284,9 +284,6 @@ defineExpose({
   top: -100%;
   position: absolute;
   right: 20px;
-}
-.call-center.hide {
-  // top: -100%;
 }
 .call-center.show {
   top: 10px;

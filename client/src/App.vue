@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { initSocket } from './libs/socketHelper';
-import Home from './components/home/index.vue';
+import Chat from '@pages/chat/index.vue';
 import Login from './components/login/index.vue';
 
 let isLogin = localStorage.getItem('TOKEN') ? ref(true) : ref(false);
@@ -10,8 +10,6 @@ if (isLogin) {
 }
 
 const loginBoxVisible = ref(true);
-const hideLoginBox = ref(false)
-const chatRef = ref<InstanceType<typeof Home> | null>(null);
 
 function loginSuccess() {
   initSocket();
@@ -30,6 +28,6 @@ function loginSuccess() {
       @success="loginSuccess"
       :visible="loginBoxVisible"
     ></Login>
-    <Home v-if="isLogin || !loginBoxVisible" class="absolute top-0 left-0" ref="chatRef"></Home>
+    <Chat v-if="isLogin || !loginBoxVisible" class="absolute top-0 left-0"></Chat>
   </div>
 </template>

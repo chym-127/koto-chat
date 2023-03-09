@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { User } from '../components/home/types';
+import { User } from '@/pages/chat/types';
 
 interface UserMessage {
   type: string;

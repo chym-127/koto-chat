@@ -13,7 +13,14 @@
     "skipLibCheck": true,
     "noEmit": true,
     "types": ["node"],
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@components/*": ["./src/components/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@libs/*": ["./src/libs/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/request/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, nextTick, computed } from 'vue';
-import VoiceChat from '../voice-chat/index.vue';
+import CallPhone from './CallPhone/index.vue';
 import { listUser } from '../../request/api';
 import { RecentMsg, User, UserState } from './types';
 import phoneCall from '../../assets/phone-call.png';
@@ -117,7 +117,7 @@ socket.on('receive_msg', (msg) => {
 
 // 发起呼叫请求
 function handleRequestCall() {
-  chatRef.value!.call(activeUser);
+  callPhoneRef.value!.call(activeUser);
 }
 
 function logout() {
@@ -137,7 +137,7 @@ const sendInputPlaceholder = computed(() => {
 });
 
 let senderId = ref(user.id);
-const chatRef = ref<InstanceType<typeof VoiceChat> | null>(null);
+const callPhoneRef = ref<InstanceType<typeof CallPhone> | null>(null);
 const msgContainer = ref<InstanceType<typeof HTMLDivElement> | null>(null);
 
 handleListUser();
@@ -145,7 +145,7 @@ handleListUser();
 
 <template>
   <div class="w-screen h-screen bg-[#f0f0f0] flex relative">
-    <VoiceChat ref="chatRef" class="z-50" :sender-id="senderId"></VoiceChat>
+    <CallPhone ref="chatRef" class="z-50" :sender-id="senderId"></CallPhone>
     <div class="left-box w-[74px] h-full bg-[#F9F9F9] flex flex-col justify-center items-between">
       <div class="logo mt-[36px] h-[80px]"></div>
       <div class="menus w-full flex flex-col justify-start items-center space-y-4 flex-1 h-0">
@@ -234,7 +234,10 @@ handleListUser();
           <span class="text-xl font-medium">{{ activeUser.username }}</span>
         </div>
         <div class="flex space-x-6">
-          <div class="w-[35px] h-[35px] rounded-lg bg-white flex justify-center items-center" @click="handleRequestCall()">
+          <div
+            class="w-[35px] h-[35px] rounded-lg bg-white flex justify-center items-center"
+            @click="handleRequestCall()"
+          >
             <i class="iconfont icon-call"></i>
           </div>
           <div class="w-[35px] h-[35px] rounded-lg bg-white flex justify-center items-center">
