@@ -125,6 +125,10 @@ function logout() {
   location.reload();
 }
 
+function comeSoon() {
+  alert('come soon');
+}
+
 const sendInputPlaceholder = computed(() => {
   if (activeUser.state === UserState.OFFLINE) {
     return '对方不在线，无法发送消息';
@@ -141,7 +145,29 @@ handleListUser();
 
 <template>
   <div class="w-screen h-screen bg-[#f0f0f0] flex relative">
-    <div class="left-box w-[74px] h-full bg-[#F9F9F9]"></div>
+    <VoiceChat ref="chatRef" class="z-50" :sender-id="senderId"></VoiceChat>
+    <div class="left-box w-[74px] h-full bg-[#F9F9F9] flex flex-col justify-center items-between">
+      <div class="logo mt-[36px] h-[80px]"></div>
+      <div class="menus w-full flex flex-col justify-start items-center space-y-4 flex-1 h-0">
+        <div class="menu w-[40px] h-[40px] rounded flex justify-center items-center" @click="comeSoon">
+          <i class="iconfont icon-home"></i>
+        </div>
+        <div class="menu w-[40px] h-[40px] rounded flex justify-center items-center bg-[#EED8FF]">
+          <i class="iconfont icon-chat text-[#A251E1]"></i>
+        </div>
+        <div class="menu w-[40px] h-[40px] rounded flex justify-center items-center" @click="comeSoon">
+          <i class="iconfont icon-game"></i>
+        </div>
+        <div class="menu w-[40px] h-[40px] rounded flex justify-center items-center" @click="comeSoon">
+          <i class="iconfont icon-setting"></i>
+        </div>
+      </div>
+      <div class="logout cursor-pointer h-[80px] w-full flex justify-center items-center">
+        <div @click="logout" class="w-[40px] h-[40px] rounded flex justify-center items-center">
+          <i class="iconfont icon-logout"></i>
+        </div>
+      </div>
+    </div>
 
     <div class="center-box w-[375px] border-r h-full bg-[#fff]">
       <div class="profile mt-[30px] w-full flex flex-col justify-center items-center">
@@ -181,8 +207,8 @@ handleListUser();
             <div class="mb-1">
               <span class="text-xl font-medium">{{ u.username }}</span>
             </div>
-            <div class="text-xs text-[#A1A1A1] text-ellipsis whitespace-nowrap">
-              <span>{{ recentMapper[u.id] ? recentMapper[u.id].content : '' }}</span>
+            <div class="text-xs text-[#A1A1A1] text-ellipsis whitespace-nowrap break-all overflow-hidden">
+              {{ recentMapper[u.id] ? recentMapper[u.id].content : '' }}
             </div>
           </div>
 
@@ -208,8 +234,12 @@ handleListUser();
           <span class="text-xl font-medium">{{ activeUser.username }}</span>
         </div>
         <div class="flex space-x-6">
-          <div class="w-[35px] h-[35px] rounded-lg bg-white"></div>
-          <div class="w-[35px] h-[35px] rounded-lg bg-white"></div>
+          <div class="w-[35px] h-[35px] rounded-lg bg-white flex justify-center items-center" @click="handleRequestCall()">
+            <i class="iconfont icon-call"></i>
+          </div>
+          <div class="w-[35px] h-[35px] rounded-lg bg-white flex justify-center items-center">
+            <i class="iconfont icon-menu"></i>
+          </div>
         </div>
       </div>
       <div class="message-box flex-1 h-0 w-full my-6 overflow-hidden">
@@ -239,6 +269,7 @@ handleListUser();
       </div>
       <div
         class="send-bar h-[74px] rounded-xl bg-white p-4 mx-6 mb-[40px]"
+        :class="activeUser.state === UserState.OFFLINE ? 'input-disabled' : null"
         style="box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25)"
       >
         <input
@@ -261,6 +292,13 @@ input {
 
 input:focus {
   outline: none;
+}
+// input:disabled {
+//   background-color: transparent;
+// }
+
+.input-disabled {
+  background-color: #efefef4d;
 }
 
 .profile .avatar {

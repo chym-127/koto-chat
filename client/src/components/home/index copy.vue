@@ -173,7 +173,7 @@ handleListUser();
             >
               <div class="flex flex-1 max-w-full flex-col">
                 <span class="text font-medium mt-1">{{ user.username }}</span>
-                <div class="text-xs text-[#cfcfcf] text-ellipsis whitespace-nowrap">
+                <div class="text-xs text-[#cfcfcf] text-ellipsis whitespace-nowrap ">
                   {{ recentMapper[user.id] ? recentMapper[user.id].content : '' }}
                 </div>
               </div>
