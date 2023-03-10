@@ -3,9 +3,9 @@ import { reactive, ref, nextTick, computed } from 'vue';
 import CallPhone from './CallPhone/index.vue';
 import { listUser } from '../../request/api';
 import { RecentMsg, User, UserState } from './types';
-import { getAvatarByUserId } from '../../libs/avatar';
+import { getAvatarByUserId } from '@libs/avatar';
 import { useMessageStore } from '@store/index';
-import { socket, UserMessage, Message } from '../../libs/socketHelper';
+import { socket, UserMessage, Message } from '@libs/socketHelper';
 
 let users = reactive<User[]>([]);
 let activeUser = reactive<User>({
@@ -59,7 +59,6 @@ function setActiveUser(user: User, index: number) {
   recentMapper[user.id].newMsgCount = 0;
   activeUserIndex.value = index;
   activeUser = Object.assign(activeUser, user);
-  console.log(activeUser);
   nextTick(() => {
     msgContainer.value?.scrollTo(0, msgContainer.value?.scrollHeight);
   });
@@ -205,7 +204,7 @@ handleListUser();
           </div>
         </div>
         <div class="header px-4 py-2">
-          <span class="text-xl font-medium">Chats</span>
+          <span class="text-xl font-medium">Friends</span>
         </div>
         <div
           class="chat-user px-4 py-2 h-[70px] w-full flex justify-between items-center"
@@ -254,6 +253,7 @@ handleListUser();
         <div class="flex space-x-6">
           <div
             class="w-[35px] h-[35px] rounded-lg bg-white flex justify-center items-center"
+            v-show="activeUser.id !== 1"
             @click="handleRequestCall()"
           >
             <i class="iconfont icon-call"></i>

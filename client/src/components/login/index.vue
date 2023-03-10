@@ -44,7 +44,9 @@
 import { reactive, ref } from 'vue';
 import { login, register } from '../../request/api';
 import { Res } from '../../request/type';
+import { useUserStore } from '@store/index';
 
+const userStore = useUserStore();
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -68,7 +70,7 @@ function handleLogin() {
     if (resp.code === 0 && resp.data.token) {
       localStorage.setItem('TOKEN', resp.data.token);
       localStorage.setItem('USER_INFO', JSON.stringify(resp.data.userInfo));
-
+      userStore.login(resp.data.userInfo);
       emit('success');
     } else {
       alert(resp.details);

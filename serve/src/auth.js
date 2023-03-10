@@ -1,13 +1,22 @@
 var jwt = require('jsonwebtoken');
+const sha = 'kotoooooo'
 
-function generaToken(data = {}) {
-    var token = jwt.sign(data, 'kotoooooo', { expiresIn: '2h' });
+const userTokens = {
+
+}
+
+function generaToken(userId, data = {}) {
+    var token = jwt.sign(data, sha, { expiresIn: '2h' });
+    userTokens[userId] = token
     return token
 }
 
-function checkTokenValid(token) {
+function checkTokenValid(userId, token) {
+    if (userTokens[userId] !== token) {
+        return false
+    }
     try {
-        jwt.verify(token, 'kotoooooo');
+        jwt.verify(token, sha);
         return true
     } catch (err) {
         return false
@@ -17,9 +26,9 @@ function checkTokenValid(token) {
 
 function decode(token) {
     try {
-        return jwt.verify(token, 'kotoooooo');
+        return jwt.verify(token, sha);
     } catch (err) {
-        return {}
+        return null
     }
 }
 

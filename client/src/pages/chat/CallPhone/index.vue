@@ -99,7 +99,7 @@ onMounted(() => {
   localAudio = document.querySelector('#localAudio');
   remoteAudio = document.querySelector('#remoteAudio');
   ringtonesAudio = document.querySelector('#ringtonesAudio');
-  ringtonesAudio.volume = 0.4;
+  ringtonesAudio.volume = 0.3;
   ringtonesAudio.addEventListener(
     'ended',
     function () {
@@ -264,14 +264,14 @@ defineExpose({
         <div class="text-center" @click="hangUp">
           <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#cd3a4a] flex justify-center items-center mb-1">
             <!-- <img src="@assets/call.png" class="h-[24px] w-[24px]" alt="" srcset="" /> -->
-            <i class="iconfont icon-hangup text-white"></i>
+            <i class="iconfont icon-hangup text-white text-lg"></i>
           </div>
           <!-- <span class="text-center">{{ status === CallState.CALLED ? '拒绝' : '取消' }}</span> -->
         </div>
 
         <div class="text-center" v-if="status === CallState.CALLED" @click="agreeCall">
           <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#1ccf11] flex justify-center items-center mb-1">
-            <i class="iconfont icon-called text-white"></i>
+            <i class="iconfont icon-called text-white text-lg"></i>
           </div>
           <!-- <span class="text-center">接听</span> -->
         </div>

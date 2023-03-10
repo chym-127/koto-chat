@@ -2,27 +2,34 @@
 import { ref } from 'vue';
 import { initSocket } from './libs/socketHelper';
 import Login from './components/login/index.vue';
-
+import { socket, UserMessage, Message } from '@libs/socketHelper';
 import { useUserStore } from '@store/index';
 
 const userStore = useUserStore();
 
-console.log(userStore.isLogin);
-
 let isLogin = localStorage.getItem('TOKEN') ? ref(true) : ref(false);
-if (isLogin) {
-  initSocket();
+
+if (isLogin.value) {
+  initSocket(listenAuth);
 }
 
 const loginBoxVisible = ref(true);
 
 function loginSuccess() {
-  initSocket();
+  initSocket(listenAuth);
   loginBoxVisible.value = false;
   setTimeout(() => {
     isLogin.value = true;
   }, 1000);
 }
+
+
+function listenAuth() {
+  socket.on('logout',()=>{
+    userStore.logout()
+  })
+}
+
 </script>
 
 <template>

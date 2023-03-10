@@ -41,6 +41,7 @@ interface ServerToClientEvents {
   send_sdp: (msg: SDPMessage) => void;
   receive_sdp: (msg: SDPMessage) => void;
   receive_msg: (msg: Message) => void;
+  logout: () => void;
 }
 
 interface ClientToServerEvents {
@@ -52,12 +53,15 @@ interface ClientToServerEvents {
 }
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
-function initSocket() {
+function initSocket(callback?: Function) {
   socket = io(import.meta.env.VITE_BASE_API_URL, {
     auth: {
       token: localStorage.getItem('TOKEN'),
     },
   });
+  if (callback) {
+    callback();
+  }
 }
 export { socket, initSocket, CallAck };
 

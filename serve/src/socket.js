@@ -1,5 +1,5 @@
 var os = require('os');
-const { decode } = require('./auth')
+const { decode, checkTokenValid } = require('./auth')
 const { addUser, removeUser, updateUser, getUsers } = require('./users-manage')
 
 const db = require('./db.js')
@@ -13,9 +13,23 @@ function initSocket(io) {
             ...user,
             socketId: socket.id
         }
-        socket.on('disconnect', function() {
+        if (!checkTokenValid(user.id, token)) {
+            socket.emit('logout')
+        }
+
+        socket.use(([event, ...args], next) => {
+            const user = decode(token)
+            if (token && !user) {
+                socket.emit('logout')
+            } else if (token && checkTokenValid(user.id, token)) {
+                next()
+            } else {
+                socket.emit('logout')
+            }
+        });
+        socket.on('disconnect', function () {
             updateUser(user.id, { state: 1 })
-         });
+        });
         // 发起呼叫请求
         socket.on('req_call', (userId) => {
             const u = userMapper[userId]
@@ -37,8 +51,12 @@ function initSocket(io) {
         })
 
         socket.on('send_msg', function (msg) {
-            let u1 = userMapper[msg.receiverId]
-            io.sockets.to(u1.socketId).emit("receive_msg", msg)
+            if (msg.receiverId === 1) {
+                socket.emit("receive_msg", { ...msg, receiverId: user.id, senderId: 1 })
+            } else {
+                let u1 = userMapper[msg.receiverId]
+                io.sockets.to(u1.socketId).emit("receive_msg", msg)
+            }
         })
         socket.on('ipaddr', function () {
             var ifaces = os.networkInterfaces();

@@ -83,7 +83,11 @@ function checkRegisterParams(params = {}) {
 function auth() {
     return (req, res, next) => {
         let token = req.get('Token')
-        if (token && checkTokenValid(token)) {
+        const user = decode(token)
+        if (!user) {
+            res.status(401).json(errorRes().end())
+        }
+        if (token && checkTokenValid(user.id, token)) {
             next()
         } else {
             res.status(401).json(errorRes().end())
@@ -128,7 +132,7 @@ app.post("/login", (req, res) => {
         try {
             const user = findUserByUsernameWithPassword(requestData.username, requestData.password)
             if (user) {
-                let token = generaToken(user)
+                let token = generaToken(user.id, user)
                 res.json(successRes().data({
                     token: token, userInfo: {
                         id: user.id,

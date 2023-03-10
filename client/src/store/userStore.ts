@@ -12,7 +12,12 @@ const useUserStore = defineStore('user_store', () => {
     userInfo = reactive<any>(user);
   }
 
-  return { isLogin, userInfo, login };
+  function logout() {
+    localStorage.clear();
+    location.reload();
+  }
+
+  return { isLogin, userInfo, login, logout };
 });
 
 export default useUserStore;
