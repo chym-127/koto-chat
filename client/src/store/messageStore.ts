@@ -1,18 +1,14 @@
 import { defineStore } from 'pinia';
-import { reactive, ref } from 'vue';
 import { Message } from '@libs/socketHelper';
-import { useLocalStorage, MaybeComputedRef } from '@vueuse/core';
+import useLocalStore from './useLocalStore';
 const useMessageStore = defineStore('user_messages', () => {
-  //登录状态
-  const messageMapper = useLocalStorage<any>('MESSAGES', {}, { mergeDefaults: true });
+  const messageMapper = useLocalStore<{ [key: number]: Message[] }>('MESSAGES', {});
 
-  //login
   function addMsg(userId: number, msg: Message) {
-    if (messageMapper.value[userId]) {
-      messageMapper.value[userId] = [];
+    if (!messageMapper[userId]) {
+      messageMapper[userId] = [];
     }
-    console.log(messageMapper.value);
-    messageMapper.value[userId].push(msg);
+    messageMapper[userId].push(msg);
   }
 
   return { messageMapper, addMsg };

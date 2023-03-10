@@ -99,6 +99,7 @@ onMounted(() => {
   localAudio = document.querySelector('#localAudio');
   remoteAudio = document.querySelector('#remoteAudio');
   ringtonesAudio = document.querySelector('#ringtonesAudio');
+  ringtonesAudio.volume = 0.4;
   ringtonesAudio.addEventListener(
     'ended',
     function () {
@@ -243,7 +244,7 @@ defineExpose({
     <audio id="remoteAudio" class="invisible absolute" autoplay controls></audio>
     <audio id="ringtonesAudio" :src="ringtonePath" class="invisible absolute"></audio>
 
-    <div class="p-8" v-show="status !== CallState.NORMAL">
+    <div class="p-4 h-full flex flex-col items-center justify-between" v-show="status !== CallState.NORMAL">
       <div class="user w-full flex flex-col items-center mb-24">
         <div class="pic h-[64px] w-[64px] bg-[#f0f0f0] rounded-full">
           <img
@@ -254,24 +255,25 @@ defineExpose({
             srcset=""
           />
         </div>
-        <div class="username mt-2">{{ targetUser?.username }}</div>
+        <div class="username mt-2 text-white">{{ targetUser?.username }}</div>
       </div>
-      <div class="duration text-center" v-show="status === CallState.CALLING">
+      <div class="duration text-center text-white" v-show="status === CallState.CALLING">
         <span>{{ duration }}</span>
       </div>
-      <div class="operation flex" :class="status === CallState.CALLED ? 'justify-between' : 'justify-center'">
+      <div class="operation flex w-full" :class="status === CallState.CALLED ? 'justify-between' : 'justify-center'">
         <div class="text-center" @click="hangUp">
           <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#cd3a4a] flex justify-center items-center mb-1">
-            <img src="@assets/call.png" class="h-[24px] w-[24px]" alt="" srcset="" />
+            <!-- <img src="@assets/call.png" class="h-[24px] w-[24px]" alt="" srcset="" /> -->
+            <i class="iconfont icon-hangup text-white"></i>
           </div>
-          <span class="text-center">{{ status === CallState.CALLED ? '拒绝' : '取消' }}</span>
+          <!-- <span class="text-center">{{ status === CallState.CALLED ? '拒绝' : '取消' }}</span> -->
         </div>
 
         <div class="text-center" v-if="status === CallState.CALLED" @click="agreeCall">
           <div class="rounded-full h-[48px] cursor-pointer w-[48px] bg-[#1ccf11] flex justify-center items-center mb-1">
-            <img src="@assets/call.png" class="h-[24px] w-[24px] rotate-[135deg]" alt="" srcset="" />
+            <i class="iconfont icon-called text-white"></i>
           </div>
-          <span class="text-center">接听</span>
+          <!-- <span class="text-center">接听</span> -->
         </div>
       </div>
     </div>
@@ -284,6 +286,10 @@ defineExpose({
   top: -100%;
   position: absolute;
   right: 20px;
+
+  background: linear-gradient(360deg, #142432 0.01%, #7c8fa1 100%);
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
 }
 .call-center.show {
   top: 10px;

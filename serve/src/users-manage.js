@@ -1,9 +1,11 @@
-const { listUsers } = require('./services')
+const { listUsers, getRobot } = require('./services')
 let users = []
-
+let robot = null
 let socketIO = null
 
 function initUsers() {
+    robot = getRobot()
+    robot.state = 2
     const arr = listUsers()
     users = arr.map((user) => {
         return {
@@ -51,6 +53,10 @@ function getUsers() {
     return users
 }
 
+function getRobotUser() {
+    return robot
+}
+
 function initUserManage(io) {
     socketIO = io
     initUsers()
@@ -62,5 +68,6 @@ module.exports = {
     addUser,
     removeUser,
     getUsers,
+    getRobotUser,
     updateUser
 }

@@ -22,14 +22,21 @@ function findUserByUsernameWithPassword(username, password) {
 }
 
 function listUsers() {
-    const stmt = db.prepare('SELECT id,username FROM users');
+    const stmt = db.prepare('SELECT id,username FROM users where id != 1');
     const users = stmt.all();
     return users
+}
+
+function getRobot() {
+    const stmt = db.prepare('SELECT id,username FROM users WHERE id = ?');
+    const user = stmt.get(1);
+    return user
 }
 
 module.exports = {
     createUser,
     listUsers,
+    getRobot,
     findUserByUsername,
     findUserByUsernameWithPassword
 }

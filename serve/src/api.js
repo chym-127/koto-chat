@@ -5,7 +5,7 @@ const { generaToken,
     checkTokenValid,
     decode } = require('./auth')
 
-const { addUser, removeUser, updateUser, getUsers } = require('./users-manage')
+const { addUser, removeUser, updateUser, getUsers, getRobotUser } = require('./users-manage')
 const { createUser, findUserByUsername, findUserByUsernameWithPassword, listUsers } = require('./services')
 class BaseRes {
     constructor() { }
@@ -148,8 +148,10 @@ app.post("/login", (req, res) => {
 app.post('/list/user', (req, res) => {
     try {
         const users = getUsers()
+        const robot = getRobotUser()
         res.json(successRes().data({
-            items: users
+            items: users,
+            robot: robot
         }).end())
     } catch (error) {
         res.json(errorRes().end())

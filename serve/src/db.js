@@ -20,6 +20,14 @@ function initTables() {
         `
         db.exec(createUserTable);
     }
+    const stmt = db.prepare('SELECT id,username FROM users WHERE id = ?');
+    const user = stmt.get(1);
+    if (!user) {
+        const stm = `
+            INSERT INTO users (username,password) VALUES('Chen','123456789')
+        `
+        db.exec(stm);
+    }
 }
 
 //删除所有表

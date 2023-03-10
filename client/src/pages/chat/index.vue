@@ -3,11 +3,10 @@ import { reactive, ref, nextTick, computed } from 'vue';
 import CallPhone from './CallPhone/index.vue';
 import { listUser } from '../../request/api';
 import { RecentMsg, User, UserState } from './types';
-import phoneCall from '../../assets/phone-call.png';
-import sendPic from '../../assets/send.png';
 import { getAvatarByUserId } from '../../libs/avatar';
 import { useMessageStore } from '@store/index';
 import { socket, UserMessage, Message } from '../../libs/socketHelper';
+
 let users = reactive<User[]>([]);
 let activeUser = reactive<User>({
   id: 0,
@@ -16,11 +15,13 @@ let activeUser = reactive<User>({
 });
 const activeUserIndex = ref(-1);
 let user = JSON.parse(localStorage.getItem('USER_INFO')!);
-
-const msgMapper = reactive<{ [key: number]: Message[] }>({});
-
 const msgStore = useMessageStore();
-
+const msgMapper = msgStore.messageMapper;
+let robotUser = reactive<User>({
+  id: 0,
+  username: '',
+  state: UserState.OFFLINE,
+});
 const recentMapper = reactive<{ [key: number]: RecentMsg }>({});
 
 function handleListUser() {
@@ -29,14 +30,27 @@ function handleListUser() {
       resp.data.items.forEach((u: any) => {
         if (user.id !== u.id) {
           users.push(u);
-          msgMapper[+u.id] = [];
+          let content = '';
+          // if (msgMapper[+u.id] && msgMapper[+u.id].length > 0) {
+          //   let arr = msgMapper[+u.id].slice(-1);
+          //   content = arr[0].content;
+          // }
           recentMapper[+u.id] = {
-            content: '',
+            content: content,
             newMsgCount: 0,
             isTyping: false,
           };
         }
       });
+      if (resp.data.robot) {
+        robotUser = Object.assign(robotUser, resp.data.robot);
+        recentMapper[+robotUser.id] = {
+          content: '',
+          newMsgCount: 0,
+          isTyping: false,
+        };
+        activeUser = Object.assign(activeUser, robotUser);
+      }
     }
   });
 }
@@ -44,9 +58,8 @@ function handleListUser() {
 function setActiveUser(user: User, index: number) {
   recentMapper[user.id].newMsgCount = 0;
   activeUserIndex.value = index;
-  activeUser.id = user.id;
-  activeUser.username = user.username;
-  activeUser.state = user.state;
+  activeUser = Object.assign(activeUser, user);
+  console.log(activeUser);
   nextTick(() => {
     msgContainer.value?.scrollTo(0, msgContainer.value?.scrollHeight);
   });
@@ -98,7 +111,6 @@ function sendMessage() {
     sendTime: +new Date(),
   };
   socket.emit('send_msg', msg);
-  msgMapper[activeUser.id].push(msg);
   msgStore.addMsg(activeUser.id, msg);
   recentMapper[activeUser.id].content = msg.content;
 
@@ -109,7 +121,6 @@ function sendMessage() {
 }
 
 socket.on('receive_msg', (msg) => {
-  msgMapper[msg.senderId].push(msg);
   msgStore.addMsg(msg.senderId, msg);
   recentMapper[msg.senderId].content = msg.content;
   if (msg.senderId === activeUser.id) {
@@ -160,6 +171,39 @@ handleListUser();
       </div>
 
       <div class="chats-box">
+        <div class="header px-4 py-2">
+          <span class="text-xl font-medium">Robot</span>
+        </div>
+        <div
+          class="chat-user px-4 py-2 h-[70px] w-full flex justify-between items-center"
+          :class="activeUserIndex === -1 ? 'bg-[#F6F6F6]' : null"
+          @click="setActiveUser(robotUser, -1)"
+        >
+          <div class="w-[50px] h-[50px] relative rounded-full">
+            <div class="state-point w-[8px] h-[8px] rounded-full top-[36px] right-[6px] absolute bg-[#27AD55]"></div>
+            <img :src="getAvatarByUserId(1)" class="w-[50px] h-[50px] rounded-full" alt="" srcset="" />
+          </div>
+          <div class="ml-3 flex-1 w-0 h-full">
+            <div class="mb-1">
+              <span class="text-xl font-medium">{{ robotUser.username }}</span>
+            </div>
+            <div class="text-xs text-[#A1A1A1] text-ellipsis whitespace-nowrap break-all overflow-hidden"></div>
+          </div>
+
+          <div class="h-full w-[40px]">
+            <div>
+              <span class="text-xs text-[#A1A1A1]">20:30</span>
+            </div>
+            <div
+              v-if="recentMapper[robotUser.id]?.newMsgCount"
+              class="mt-1 flex text-center w-[18px] h-[18px] justify-center items-center rounded-full bg-[#A251E1]"
+            >
+              <span class="text-white text-xs">
+                {{ recentMapper[robotUser.id].newMsgCount }}
+              </span>
+            </div>
+          </div>
+        </div>
         <div class="header px-4 py-2">
           <span class="text-xl font-medium">Chats</span>
         </div>
@@ -224,7 +268,7 @@ handleListUser();
           <div
             class="message-item mb-3 flex"
             :class="msg.senderId === activeUser.id ? 'items-start' : 'items-end flex-row-reverse'"
-            v-for="(msg, index) in msgMapper[activeUser.id]"
+            v-for="(msg, index) in msgMapper[+activeUser.id]"
             :key="index"
           >
             <div class="send-avatar w-[40px] h-[40px] rounded-full">
