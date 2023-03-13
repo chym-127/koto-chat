@@ -33,7 +33,7 @@ function initSocket(io) {
         // 发起呼叫请求
         socket.on('req_call', (userId) => {
             const u = userMapper[userId]
-            if (u) {
+            if (u && u.socketId) {
                 io.sockets.to(u.socketId).emit('req_call', {
                     id: user.id,
                     username: user.username
@@ -43,11 +43,15 @@ function initSocket(io) {
         // 响应呼叫
         socket.on('res_call', (msg) => {
             let u1 = userMapper[msg.user.id]
-            io.sockets.to(u1.socketId).emit("res_call", { ack: msg.ack, user: { id: user.id, username: user.username } })
+            if (u1 && u1.socketId) {
+                io.sockets.to(u1.socketId).emit("res_call", { ack: msg.ack, user: { id: user.id, username: user.username } })
+            }
         })
         socket.on('send_sdp', (message) => {
             let rUser = userMapper[message.receiverId]
-            io.sockets.to(rUser.socketId).emit("receive_sdp", message)
+            if (rUser && rUser.socketId) {
+                io.sockets.to(rUser.socketId).emit("receive_sdp", message)
+            }
         })
 
         socket.on('send_msg', function (msg) {

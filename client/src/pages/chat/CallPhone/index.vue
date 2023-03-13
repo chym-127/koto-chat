@@ -93,6 +93,11 @@ function call(user: User) {
   status.value = CallState.CALLER;
   targetUser = user;
   socket.emit('req_call', targetUser.id);
+  setTimeout(() => {
+    if (CallState.CALLER) {
+      hangUp();
+    }
+  }, 11000);
 }
 
 onMounted(() => {

@@ -149,7 +149,7 @@ app.post("/login", (req, res) => {
     }
 })
 
-app.post('/list/user', (req, res) => {
+app.post('/list/user', auth(), (req, res) => {
     try {
         const users = getUsers()
         const robot = getRobotUser()

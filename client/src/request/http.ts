@@ -1,5 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { Res } from './type';
+import { useUserStore } from '@store/index';
+
 axios.defaults.baseURL = import.meta.env.VITE_BASE_API_URL;
 axios.defaults.headers.common['Token'] = '1111';
 
@@ -21,6 +23,15 @@ const onResponse = (response: AxiosResponse<Res>): AxiosResponse<Res> => {
 };
 
 axios.interceptors.response.use(onResponse, function (error) {
+  const userStore = useUserStore();
+  let statusCode = error.response.status;
+  switch (statusCode) {
+    case 401:
+      userStore.logout();
+      break;
+    default:
+      break;
+  }
   return Promise.reject(error);
 });
 
